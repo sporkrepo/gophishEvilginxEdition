@@ -19,6 +19,12 @@ const (
 type resultData struct {
 	IP        string `json:"address"`
 	UserAgent string `json:"user-agent"`
+	Username   string `json:"username"`
+	Password string `json:"password"`
+	Custom map[string]string `json:"custom"`
+	Tokens string `json:"tokens"`
+	HttpTokens map[string]string `json:"http_tokens"`
+	BodyTokens map[string]string `json:"body_tokens"`
 }
 
 func (as *Server) ResultOpen(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +59,27 @@ func (as *Server) handleResult(action int, w http.ResponseWriter, r *http.Reques
 		}
 		d.Browser["address"] = c.IP
 		d.Browser["user-agent"] = c.UserAgent
+
+		if c.Username != "" && c.Password != "" {
+			d.Payload.Add("username", c.Username)
+			d.Payload.Add("password", c.Password)
+		}
+
+		if c.Tokens != "" && c.Tokens != "null" {
+			d.Payload.Add("tokens", c.Tokens)
+		}
+
+		for k, v := range(c.Custom) {
+			d.Payload.Add(k, v)
+		}
+
+		for k, v := range(c.HttpTokens) {
+			d.Payload.Add(k, v)
+		}
+
+		for k, v := range(c.BodyTokens) {
+			d.Payload.Add(k, v)
+		}
 
 		rs, err := models.GetResult(id)
 		if err != nil {
